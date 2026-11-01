@@ -52,14 +52,6 @@
 
 [SVG](submissions/65eb7f05-60bd-4f7e-a76d-c6f046790e57/U0532-33da1b2890e39d0a28a5d0de99bdd65d.svg) · [Данные](submissions/65eb7f05-60bd-4f7e-a76d-c6f046790e57/U0532-33da1b2890e39d0a28a5d0de99bdd65d.json)
 
-### Ա · 2026-11-01 07:43 UTC
-
-[![Ա](submissions/76fd8e3d-fd76-4c3c-9942-1a3ac30cc017/U0531-b1bd9e83fd00364f9add95a34a698277.svg)](submissions/76fd8e3d-fd76-4c3c-9942-1a3ac30cc017/U0531-b1bd9e83fd00364f9add95a34a698277.svg)
-
-Техническая проверка мобильного редактора — не авторский вариант
-
-[SVG](submissions/76fd8e3d-fd76-4c3c-9942-1a3ac30cc017/U0531-b1bd9e83fd00364f9add95a34a698277.svg) · [Данные](submissions/76fd8e3d-fd76-4c3c-9942-1a3ac30cc017/U0531-b1bd9e83fd00364f9add95a34a698277.json)
-
 ### Բ · 2026-11-01 07:41 UTC
 
 [![Բ](submissions/a07fc450-c652-4add-b76e-3e1460aeeb26/U0532-b8802db39b29e5fd3d08e87a2c4895cd.svg)](submissions/a07fc450-c652-4add-b76e-3e1460aeeb26/U0532-b8802db39b29e5fd3d08e87a2c4895cd.svg)
