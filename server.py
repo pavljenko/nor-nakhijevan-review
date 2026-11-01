@@ -106,8 +106,8 @@ class Handler(BaseHTTPRequestHandler):
    with LOCK,database() as c:rows=c.execute('SELECT id,glyph,status,svg_url,json_url,created FROM drawings WHERE session=? ORDER BY created',(session,)).fetchall()
    return self.reply(200,{'records':[dict(r) for r in rows]})
   if os.environ.get('LOCAL_PREVIEW')=='1':
-   name=u.path.split('/')[-1] or 'index.html';p=ROOT/'public'/name
-   if p.is_file() and p.parent==ROOT/'public':
+   name=u.path.split('/')[-1] or 'index.html';p=ROOT/'docs'/name
+   if p.is_file() and p.parent==ROOT/'docs':
     self.send_response(200);self.send_header('Content-Type','application/javascript' if p.suffix=='.js' else 'text/html; charset=utf-8');self.end_headers();return self.wfile.write(p.read_bytes())
   self.reply(404,{'error':'Не найдено'})
  def do_POST(self):
