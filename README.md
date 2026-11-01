@@ -52,22 +52,6 @@
 
 [SVG](submissions/65eb7f05-60bd-4f7e-a76d-c6f046790e57/U0532-33da1b2890e39d0a28a5d0de99bdd65d.svg) · [Данные](submissions/65eb7f05-60bd-4f7e-a76d-c6f046790e57/U0532-33da1b2890e39d0a28a5d0de99bdd65d.json)
 
-### Բ · 2026-11-01 07:41 UTC
-
-[![Բ](submissions/a07fc450-c652-4add-b76e-3e1460aeeb26/U0532-b8802db39b29e5fd3d08e87a2c4895cd.svg)](submissions/a07fc450-c652-4add-b76e-3e1460aeeb26/U0532-b8802db39b29e5fd3d08e87a2c4895cd.svg)
-
-
-
-[SVG](submissions/a07fc450-c652-4add-b76e-3e1460aeeb26/U0532-b8802db39b29e5fd3d08e87a2c4895cd.svg) · [Данные](submissions/a07fc450-c652-4add-b76e-3e1460aeeb26/U0532-b8802db39b29e5fd3d08e87a2c4895cd.json)
-
-### Բ · 2026-11-01 07:39 UTC
-
-[![Բ](submissions/c7b6ccf1-473f-47f6-8443-ebf819a3e591/U0532-91a9f7a28e6d527ee87cce1dcc602874.svg)](submissions/c7b6ccf1-473f-47f6-8443-ebf819a3e591/U0532-91a9f7a28e6d527ee87cce1dcc602874.svg)
-
-
-
-[SVG](submissions/c7b6ccf1-473f-47f6-8443-ebf819a3e591/U0532-91a9f7a28e6d527ee87cce1dcc602874.svg) · [Данные](submissions/c7b6ccf1-473f-47f6-8443-ebf819a3e591/U0532-91a9f7a28e6d527ee87cce1dcc602874.json)
-
 ### բ · 2026-11-01 07:35 UTC
 
 [![բ](submissions/115cf32f-3ebe-476b-bc89-f7a3ff1a6145/U0562-c8794eb041f2468fcff0ca601e24a71e.svg)](submissions/115cf32f-3ebe-476b-bc89-f7a3ff1a6145/U0562-c8794eb041f2468fcff0ca601e24a71e.svg)
