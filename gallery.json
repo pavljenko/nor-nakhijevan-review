@@ -1,3 +1,14 @@
 {
-  "records": []
+  "records": [
+    {
+      "id": "6972e35ad619462ebe8fd36555c08ac6",
+      "session": "ca65222f-a58b-43d0-83b9-506d739f321d",
+      "glyph": "U0556",
+      "char": "Ֆ",
+      "created": 1793554925.0106542,
+      "note": "Техническая проверка ускоренного сохранения",
+      "svg": "submissions/ca65222f-a58b-43d0-83b9-506d739f321d/U0556-6972e35ad619462ebe8fd36555c08ac6.svg",
+      "json": "submissions/ca65222f-a58b-43d0-83b9-506d739f321d/U0556-6972e35ad619462ebe8fd36555c08ac6.json"
+    }
+  ]
 }
