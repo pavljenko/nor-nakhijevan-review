@@ -80,7 +80,7 @@ def gallery_index():
  cards=list(latest.values())
  for old in gallery.glob('latest-*.svg'):old.unlink()
  for i,r in enumerate(cards[:6],1):(gallery/f'latest-{i}.svg').write_bytes((GITDIR/r['svg']).read_bytes())
- lines=['# Зарисовки','', '[Открыть галерею](https://pavljenko.github.io/nor-nakhijevan-review/gallery.html?v=live2)','', 'Новые варианты сверху. Все предыдущие версии сохранены в папке submissions.','']
+ lines=['# Зарисовки','', '[Открыть галерею](https://tools.pavljenko.ru/nor-gallery)','', 'Новые варианты сверху. Все предыдущие версии сохранены в папке submissions.','']
  from datetime import datetime,timezone
  for r in cards[:100]:
   date=datetime.fromtimestamp(r['created'],timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
@@ -150,7 +150,7 @@ class Handler(BaseHTTPRequestHandler):
   b=json.dumps(data,ensure_ascii=False).encode();self.send_response(status);self.cors();self.send_header('Content-Type','application/json; charset=utf-8');self.send_header('Cache-Control','no-store');self.end_headers();self.wfile.write(b)
  def cors(self):
   origin=self.headers.get('Origin','')
-  if origin in ('https://pavljenko.github.io','http://127.0.0.1:8797'):
+  if origin in ('https://pavljenko.github.io','https://tools.pavljenko.ru','http://127.0.0.1:8797'):
    self.send_header('Access-Control-Allow-Origin',origin);self.send_header('Vary','Origin')
  def do_OPTIONS(self):
   self.send_response(204);self.cors();self.send_header('Access-Control-Allow-Methods','GET, POST, OPTIONS');self.send_header('Access-Control-Allow-Headers','Content-Type, X-Review-Key, X-Owner-Key');self.end_headers()
@@ -162,6 +162,8 @@ class Handler(BaseHTTPRequestHandler):
   return bool(OWNER_TOKEN) and hmac.compare_digest(self.headers.get('X-Owner-Key',''),OWNER_TOKEN)
  def do_GET(self):
   u=urllib.parse.urlsplit(self.path)
+  if u.path.endswith('/api/gallery-ui'):
+   b=(ROOT/'gallery.html').read_bytes();self.send_response(200);self.send_header('Content-Type','text/html; charset=utf-8');self.send_header('Cache-Control','no-store');self.send_header('Referrer-Policy','no-referrer');self.end_headers();return self.wfile.write(b)
   if u.path.endswith('/api/gallery'):return self.reply(200,public_gallery())
   if u.path.endswith('/api/owner'):
    if not self.owner_allowed():return self.reply(403,{'error':'Нет доступа'})
@@ -182,7 +184,7 @@ class Handler(BaseHTTPRequestHandler):
  def do_POST(self):
   if urllib.parse.urlsplit(self.path).path=='/nor-nakhijevan/api/delete':
    if not self.owner_allowed():return self.reply(403,{'error':'Только владелец может удалять зарисовки'})
-   if self.headers.get('Origin') not in ('https://pavljenko.github.io','http://127.0.0.1:8797',None):return self.reply(403,{'error':'Неверный источник'})
+   if self.headers.get('Origin') not in ('https://pavljenko.github.io','https://tools.pavljenko.ru','http://127.0.0.1:8797',None):return self.reply(403,{'error':'Неверный источник'})
    try:
     n=int(self.headers.get('Content-Length','0'))
     if not 0<n<=2000:return self.reply(413,{'error':'Неверный запрос'})
@@ -192,7 +194,7 @@ class Handler(BaseHTTPRequestHandler):
   if urllib.parse.urlsplit(self.path).path!='/nor-nakhijevan/api/review':return self.reply(404,{'error':'Не найдено'})
   if not self.allowed():return self.reply(403,{'error':'Нет доступа'})
   origin=self.headers.get('Origin')
-  if origin and origin not in ('https://pavljenko.github.io','http://127.0.0.1:8797'):return self.reply(403,{'error':'Неверный источник'})
+  if origin and origin not in ('https://pavljenko.github.io','https://tools.pavljenko.ru','http://127.0.0.1:8797'):return self.reply(403,{'error':'Неверный источник'})
   try:
    n=int(self.headers.get('Content-Length','0'))
    if not 0<n<=1500000:return self.reply(413,{'error':'Рисунок слишком большой'})

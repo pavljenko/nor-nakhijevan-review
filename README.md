@@ -1,8 +1,8 @@
 # Зарисовки Nor Nakhijevan
 
-**[Открыть галерею →](https://pavljenko.github.io/nor-nakhijevan-review/gallery.html?v=live2)** · [Архив на GitHub](https://github.com/pavljenko/nor-nakhijevan-review/tree/drawings)
+**[Открыть галерею →](https://tools.pavljenko.ru/nor-gallery)** · [Архив на GitHub](https://github.com/pavljenko/nor-nakhijevan-review/tree/drawings)
 
-<a href="https://pavljenko.github.io/nor-nakhijevan-review/gallery.html?v=live2"><img src="https://raw.githubusercontent.com/pavljenko/nor-nakhijevan-review/drawings/gallery/latest-1.svg" width="200" alt="Зарисовка 1"></a>
+<a href="https://tools.pavljenko.ru/nor-gallery"><img src="https://raw.githubusercontent.com/pavljenko/nor-nakhijevan-review/drawings/gallery/latest-1.svg" width="200" alt="Зарисовка 1"></a>
 
 ---
 
@@ -37,3 +37,5 @@ Saved constructions automatically update `gallery.json`, thumbnail aliases and t
 The owner receives a separate private gallery link. It enables deletion only after server-side verification of a dedicated owner capability; the shared submission key cannot delete. Deleting a card removes every intermediate revision for that session and glyph from the current archive, gallery and preview aliases. Git history retains previous commits. Never publish the owner key in this repository or share the private management link.
 
 The public gallery reads the live `/api/gallery` endpoint with no-store caching and refreshes every five seconds while visible, plus on focus. Deletion tombstones are excluded immediately, before GitHub cleanup completes.
+
+The live gallery HTML is also served by the collector at `/api/gallery-ui` with no-store headers. Public and private short links route to it directly, so gallery fixes do not wait for GitHub Pages deployment. GitHub remains the SVG/JSON archive and source repository.
