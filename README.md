@@ -4,22 +4,6 @@
 
 Новые варианты сверху. Все предыдущие версии сохранены в папке submissions.
 
-### Բ · 2026-11-01 07:44 UTC
-
-[![Բ](submissions/65eb7f05-60bd-4f7e-a76d-c6f046790e57/U0532-33da1b2890e39d0a28a5d0de99bdd65d.svg)](submissions/65eb7f05-60bd-4f7e-a76d-c6f046790e57/U0532-33da1b2890e39d0a28a5d0de99bdd65d.svg)
-
-
-
-[SVG](submissions/65eb7f05-60bd-4f7e-a76d-c6f046790e57/U0532-33da1b2890e39d0a28a5d0de99bdd65d.svg) · [Данные](submissions/65eb7f05-60bd-4f7e-a76d-c6f046790e57/U0532-33da1b2890e39d0a28a5d0de99bdd65d.json)
-
-### բ · 2026-11-01 07:35 UTC
-
-[![բ](submissions/115cf32f-3ebe-476b-bc89-f7a3ff1a6145/U0562-c8794eb041f2468fcff0ca601e24a71e.svg)](submissions/115cf32f-3ebe-476b-bc89-f7a3ff1a6145/U0562-c8794eb041f2468fcff0ca601e24a71e.svg)
-
-
-
-[SVG](submissions/115cf32f-3ebe-476b-bc89-f7a3ff1a6145/U0562-c8794eb041f2468fcff0ca601e24a71e.svg) · [Данные](submissions/115cf32f-3ebe-476b-bc89-f7a3ff1a6145/U0562-c8794eb041f2468fcff0ca601e24a71e.json)
-
 ### Բ · 2026-11-01 07:34 UTC
 
 [![Բ](submissions/115cf32f-3ebe-476b-bc89-f7a3ff1a6145/U0532-17ae425133686ffc74c8e30fb21ba2de.svg)](submissions/115cf32f-3ebe-476b-bc89-f7a3ff1a6145/U0532-17ae425133686ffc74c8e30fb21ba2de.svg)
