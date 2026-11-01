@@ -4,22 +4,6 @@
 
 Новые варианты сверху. Все предыдущие версии сохранены в папке submissions.
 
-### Ե · 2026-11-01 08:45 UTC
-
-[![Ե](submissions/e8a5696d-0034-447c-bf69-7935eb090b91/U0535-2584e285ddd77d5757d4e016975d48d7.svg)](submissions/e8a5696d-0034-447c-bf69-7935eb090b91/U0535-2584e285ddd77d5757d4e016975d48d7.svg)
-
-
-
-[SVG](submissions/e8a5696d-0034-447c-bf69-7935eb090b91/U0535-2584e285ddd77d5757d4e016975d48d7.svg) · [Данные](submissions/e8a5696d-0034-447c-bf69-7935eb090b91/U0535-2584e285ddd77d5757d4e016975d48d7.json)
-
-### դ · 2026-11-01 08:42 UTC
-
-[![դ](submissions/4a125057-b9bc-49af-9fb0-6a99862922df/U0564-e93e677e8e63e1d44a9ed55643d1871c.svg)](submissions/4a125057-b9bc-49af-9fb0-6a99862922df/U0564-e93e677e8e63e1d44a9ed55643d1871c.svg)
-
-
-
-[SVG](submissions/4a125057-b9bc-49af-9fb0-6a99862922df/U0564-e93e677e8e63e1d44a9ed55643d1871c.svg) · [Данные](submissions/4a125057-b9bc-49af-9fb0-6a99862922df/U0564-e93e677e8e63e1d44a9ed55643d1871c.json)
-
 ### Դ · 2026-11-01 08:26 UTC
 
 [![Դ](submissions/a6607980-ab33-4a89-ab89-0d46734ef704/U0534-c8eba52e339f36b44586ef9b62ee6365.svg)](submissions/a6607980-ab33-4a89-ab89-0d46734ef704/U0534-c8eba52e339f36b44586ef9b62ee6365.svg)
