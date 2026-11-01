@@ -12,13 +12,19 @@ g=Git();g.publish(s.validate(d),ident)
 http=s.ThreadingHTTPServer(('127.0.0.1',0),s.Handler);threading.Thread(target=http.serve_forever,daemon=True).start()
 def req(method,path,headers,body=None):
  c=__import__('http.client',fromlist=['HTTPConnection']).HTTPConnection('127.0.0.1',http.server_port)
- c.request(method,'/nor-nakhijevan/api/'+path,body=json.dumps(body) if body else None,headers=headers);r=c.getresponse();data=json.loads(r.read());c.close();return r.status,data
+ c.request(method,'/nor-nakhijevan/api/'+path,body=json.dumps(body) if body else None,headers=headers);r=c.getresponse();
+ if path=='gallery':assert r.getheader('Cache-Control')=='no-store'
+ data=json.loads(r.read());c.close();return r.status,data
 assert req('GET','owner',{})[0]==403
 assert req('GET','owner',{'X-Review-Key':s.TOKEN})[0]==403
 assert req('GET','owner',{'X-Owner-Key':'wrong'})[0]==403
 assert req('GET','owner',{'X-Owner-Key':s.OWNER_TOKEN})[1]['owner']
 for h in ({},{'X-Review-Key':s.TOKEN},{'X-Owner-Key':'wrong'}):assert req('POST','delete',h,d)[0]==403
+with s.database() as db:db.execute("UPDATE drawings SET status='saved' WHERE id=?",(ident,))
+assert any(r['id']==ident for r in req('GET','gallery',{})[1]['records'])
 assert req('POST','delete',{'X-Owner-Key':s.OWNER_TOKEN},d)[0]==202
+assert not any(r['id']==ident for r in req('GET','gallery',{})[1]['records'])
+assert list((s.GITDIR/'submissions'/d['session']).glob('*.svg')) # Git cleanup is still queued, public API already hides the card
 assert s.gallery_index()==[]
 assert s.delete_one(g)
 assert not list((s.GITDIR/'submissions'/d['session']).glob('*'))

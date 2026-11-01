@@ -53,6 +53,16 @@ def svg(d):
   if len(x['points'])==1:path+='l.01,.01'
   s.append(f'<path d="{path}" fill="none" stroke="{x["color"]}" stroke-width="{x["width"]}" stroke-linecap="round" stroke-linejoin="round"/>')
  return (''.join(s)+'</svg>').encode()
+def public_gallery():
+ with LOCK,database() as c:
+  rows=c.execute("SELECT d.* FROM drawings d WHERE d.status='saved' AND NOT EXISTS(SELECT 1 FROM deleted_groups g WHERE g.session=d.session AND g.glyph=d.glyph) ORDER BY d.created DESC").fetchall()
+ records=[]
+ for row in rows:
+  d=json.loads(row['body'])
+  if not d.get('strokes'):continue
+  rel=f'submissions/{d["session"]}/{d["glyph"]}-{row["id"]}'
+  records.append({'id':row['id'],'session':d['session'],'glyph':d['glyph'],'char':GLYPHS[d['glyph']]['char'],'created':row['created'],'note':d.get('note',''),'svg':rel+'.svg','json':rel+'.json'})
+ return {'records':records}
 def gallery_index():
  with database() as c:dates={r['id']:r['created'] for r in c.execute('SELECT id,created FROM drawings')}
  with database() as c:deleted={(r['session'],r['glyph']) for r in c.execute('SELECT session,glyph FROM deleted_groups')}
@@ -70,7 +80,7 @@ def gallery_index():
  cards=list(latest.values())
  for old in gallery.glob('latest-*.svg'):old.unlink()
  for i,r in enumerate(cards[:6],1):(gallery/f'latest-{i}.svg').write_bytes((GITDIR/r['svg']).read_bytes())
- lines=['# Зарисовки','', '[Открыть галерею](https://pavljenko.github.io/nor-nakhijevan-review/gallery.html)','', 'Новые варианты сверху. Все предыдущие версии сохранены в папке submissions.','']
+ lines=['# Зарисовки','', '[Открыть галерею](https://pavljenko.github.io/nor-nakhijevan-review/gallery.html?v=live2)','', 'Новые варианты сверху. Все предыдущие версии сохранены в папке submissions.','']
  from datetime import datetime,timezone
  for r in cards[:100]:
   date=datetime.fromtimestamp(r['created'],timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
@@ -152,6 +162,7 @@ class Handler(BaseHTTPRequestHandler):
   return bool(OWNER_TOKEN) and hmac.compare_digest(self.headers.get('X-Owner-Key',''),OWNER_TOKEN)
  def do_GET(self):
   u=urllib.parse.urlsplit(self.path)
+  if u.path.endswith('/api/gallery'):return self.reply(200,public_gallery())
   if u.path.endswith('/api/owner'):
    if not self.owner_allowed():return self.reply(403,{'error':'Нет доступа'})
    with LOCK,database() as c:deleted=[dict(r) for r in c.execute('SELECT session,glyph,status FROM deleted_groups')]
