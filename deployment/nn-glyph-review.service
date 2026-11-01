@@ -1,0 +1,21 @@
+[Unit]
+Description=Nor Nakhijevan glyph review collector
+After=network-online.target
+Wants=network-online.target
+[Service]
+User=nnreview
+Group=nnreview
+WorkingDirectory=/opt/nn-glyph-review
+EnvironmentFile=/etc/nn-glyph-review.env
+Environment=REVIEW_DATA=/var/lib/nn-glyph-review
+ExecStart=/usr/bin/python3 /opt/nn-glyph-review/server.py
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/nn-glyph-review
+[Install]
+WantedBy=multi-user.target
