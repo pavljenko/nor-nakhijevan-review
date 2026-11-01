@@ -4,14 +4,6 @@
 
 Новые варианты сверху. Все предыдущие версии сохранены в папке submissions.
 
-### Ֆ · 2026-11-01 08:23 UTC
-
-[![Ֆ](submissions/8f7a966e-7d3c-4a9d-91ee-ef44038cac25/U0556-48129ad505d828ee10838c4b6f71e61c.svg)](submissions/8f7a966e-7d3c-4a9d-91ee-ef44038cac25/U0556-48129ad505d828ee10838c4b6f71e61c.svg)
-
-Техническая проверка автообновления
-
-[SVG](submissions/8f7a966e-7d3c-4a9d-91ee-ef44038cac25/U0556-48129ad505d828ee10838c4b6f71e61c.svg) · [Данные](submissions/8f7a966e-7d3c-4a9d-91ee-ef44038cac25/U0556-48129ad505d828ee10838c4b6f71e61c.json)
-
 ### ա · 2026-11-01 08:11 UTC
 
 [![ա](submissions/a6607980-ab33-4a89-ab89-0d46734ef704/U0561-e165a2b4fab9557853bd77ee57d6547b.svg)](submissions/a6607980-ab33-4a89-ab89-0d46734ef704/U0561-e165a2b4fab9557853bd77ee57d6547b.svg)
