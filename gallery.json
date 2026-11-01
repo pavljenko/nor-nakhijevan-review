@@ -1,36 +1,6 @@
 {
   "records": [
     {
-      "id": "a40cf9931f34ccdfe22603f6224b5331",
-      "session": "00744e3e-6a2c-4c24-93b8-a42c174cf80f",
-      "glyph": "U0586",
-      "char": "ֆ",
-      "created": 1793547490.357252,
-      "note": "",
-      "svg": "submissions/00744e3e-6a2c-4c24-93b8-a42c174cf80f/U0586-a40cf9931f34ccdfe22603f6224b5331.svg",
-      "json": "submissions/00744e3e-6a2c-4c24-93b8-a42c174cf80f/U0586-a40cf9931f34ccdfe22603f6224b5331.json"
-    },
-    {
-      "id": "a5de75fa8dfc9bbe09f9865c879c2bd6",
-      "session": "00744e3e-6a2c-4c24-93b8-a42c174cf80f",
-      "glyph": "U0531",
-      "char": "Ա",
-      "created": 1793547463.4403815,
-      "note": "",
-      "svg": "submissions/00744e3e-6a2c-4c24-93b8-a42c174cf80f/U0531-a5de75fa8dfc9bbe09f9865c879c2bd6.svg",
-      "json": "submissions/00744e3e-6a2c-4c24-93b8-a42c174cf80f/U0531-a5de75fa8dfc9bbe09f9865c879c2bd6.json"
-    },
-    {
-      "id": "5d320d02884e1566a014e1c07499e20d",
-      "session": "00744e3e-6a2c-4c24-93b8-a42c174cf80f",
-      "glyph": "U0531",
-      "char": "Ա",
-      "created": 1793547459.2356746,
-      "note": "",
-      "svg": "submissions/00744e3e-6a2c-4c24-93b8-a42c174cf80f/U0531-5d320d02884e1566a014e1c07499e20d.svg",
-      "json": "submissions/00744e3e-6a2c-4c24-93b8-a42c174cf80f/U0531-5d320d02884e1566a014e1c07499e20d.json"
-    },
-    {
       "id": "f0c60e18e5c365812d51c3f6b4f07ede",
       "session": "e8a5696d-0034-447c-bf69-7935eb090b91",
       "glyph": "U0565",
