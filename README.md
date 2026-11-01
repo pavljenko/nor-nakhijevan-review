@@ -1,8 +1,16 @@
 # Зарисовки
 
-[Открыть галерею](https://pavljenko.github.io/nor-nakhijevan-review/gallery.html?v=live2)
+[Открыть галерею](https://tools.pavljenko.ru/nor-gallery)
 
 Новые варианты сверху. Все предыдущие версии сохранены в папке submissions.
+
+### դ · 2026-11-01 08:26 UTC
+
+[![դ](submissions/a6607980-ab33-4a89-ab89-0d46734ef704/U0564-68d781b8c543e69dd780a07bd5359034.svg)](submissions/a6607980-ab33-4a89-ab89-0d46734ef704/U0564-68d781b8c543e69dd780a07bd5359034.svg)
+
+
+
+[SVG](submissions/a6607980-ab33-4a89-ab89-0d46734ef704/U0564-68d781b8c543e69dd780a07bd5359034.svg) · [Данные](submissions/a6607980-ab33-4a89-ab89-0d46734ef704/U0564-68d781b8c543e69dd780a07bd5359034.json)
 
 ### ա · 2026-11-01 08:11 UTC
 
