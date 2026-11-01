@@ -83,11 +83,3 @@
 
 
 [SVG](submissions/115cf32f-3ebe-476b-bc89-f7a3ff1a6145/U0531-ad649cc51860d6a8fbcaef0681cb8dff.svg) · [Данные](submissions/115cf32f-3ebe-476b-bc89-f7a3ff1a6145/U0531-ad649cc51860d6a8fbcaef0681cb8dff.json)
-
-### Ա · 2026-11-01 07:31 UTC
-
-[![Ա](submissions/1f37d54b-a826-4b99-b06a-af67f484c811/U0531-252be8f6e5235d3167718ecc1768700e.svg)](submissions/1f37d54b-a826-4b99-b06a-af67f484c811/U0531-252be8f6e5235d3167718ecc1768700e.svg)
-
-Техническая проверка сохранения — не авторский вариант
-
-[SVG](submissions/1f37d54b-a826-4b99-b06a-af67f484c811/U0531-252be8f6e5235d3167718ecc1768700e.svg) · [Данные](submissions/1f37d54b-a826-4b99-b06a-af67f484c811/U0531-252be8f6e5235d3167718ecc1768700e.json)
