@@ -128,7 +128,7 @@ def upload_one(client):
   with LOCK,database() as c:c.execute("UPDATE drawings SET status='saved',svg_url=?,json_url=? WHERE id=? AND status!='deleted'",(su,ju,row['id']))
  except Exception as e:
   print('GitHub upload pending:',type(e).__name__,flush=True)
-  with LOCK,database() as c:c.execute("UPDATE drawings SET status='queued',attempts=attempts+1,next_try=? WHERE id=?",(time.time()+30,row['id']))
+  with LOCK,database() as c:c.execute("UPDATE drawings SET status='queued',attempts=attempts+1,next_try=? WHERE id=? AND status!='deleted'",(time.time()+30,row['id']))
  return True
 def uploader():
  client=GitArchive()

@@ -30,3 +30,9 @@ try:s.save_record(d)
 except ValueError:pass
 else:raise AssertionError('deleted revision resurrected')
 http.shutdown();print('Passed: owner-only HTTP auth, shared-key denial, complete group deletion, no resurrection')
+d2={**d,'session':str(uuid.uuid4())};ident2=s.save_record(d2)
+class Race:
+ def publish(self,d,ident):s.request_delete(d['session'],d['glyph']);raise TimeoutError()
+assert s.upload_one(Race())
+with s.database() as db:assert db.execute('select status from drawings where id=?',(ident2,)).fetchone()[0]=='deleted'
+print('Passed: deletion wins over a simultaneous failed upload')
