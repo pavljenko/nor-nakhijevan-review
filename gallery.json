@@ -1,56 +1,6 @@
 {
   "records": [
     {
-      "id": "17ae425133686ffc74c8e30fb21ba2de",
-      "session": "115cf32f-3ebe-476b-bc89-f7a3ff1a6145",
-      "glyph": "U0532",
-      "char": "Բ",
-      "created": 1793518498.0336719,
-      "note": "",
-      "svg": "submissions/115cf32f-3ebe-476b-bc89-f7a3ff1a6145/U0532-17ae425133686ffc74c8e30fb21ba2de.svg",
-      "json": "submissions/115cf32f-3ebe-476b-bc89-f7a3ff1a6145/U0532-17ae425133686ffc74c8e30fb21ba2de.json"
-    },
-    {
-      "id": "2598e19696122263388b9db5989003e7",
-      "session": "115cf32f-3ebe-476b-bc89-f7a3ff1a6145",
-      "glyph": "U0532",
-      "char": "Բ",
-      "created": 1793518496.2976992,
-      "note": "",
-      "svg": "submissions/115cf32f-3ebe-476b-bc89-f7a3ff1a6145/U0532-2598e19696122263388b9db5989003e7.svg",
-      "json": "submissions/115cf32f-3ebe-476b-bc89-f7a3ff1a6145/U0532-2598e19696122263388b9db5989003e7.json"
-    },
-    {
-      "id": "095a5bc3c00e1caac514ba6c4002a56c",
-      "session": "115cf32f-3ebe-476b-bc89-f7a3ff1a6145",
-      "glyph": "U0532",
-      "char": "Բ",
-      "created": 1793518491.6959085,
-      "note": "",
-      "svg": "submissions/115cf32f-3ebe-476b-bc89-f7a3ff1a6145/U0532-095a5bc3c00e1caac514ba6c4002a56c.svg",
-      "json": "submissions/115cf32f-3ebe-476b-bc89-f7a3ff1a6145/U0532-095a5bc3c00e1caac514ba6c4002a56c.json"
-    },
-    {
-      "id": "9a5445505f4317d86a7700451937d4f8",
-      "session": "115cf32f-3ebe-476b-bc89-f7a3ff1a6145",
-      "glyph": "U0532",
-      "char": "Բ",
-      "created": 1793518490.2605245,
-      "note": "",
-      "svg": "submissions/115cf32f-3ebe-476b-bc89-f7a3ff1a6145/U0532-9a5445505f4317d86a7700451937d4f8.svg",
-      "json": "submissions/115cf32f-3ebe-476b-bc89-f7a3ff1a6145/U0532-9a5445505f4317d86a7700451937d4f8.json"
-    },
-    {
-      "id": "f048eb802faf5d0fdf20bfa8304508ea",
-      "session": "115cf32f-3ebe-476b-bc89-f7a3ff1a6145",
-      "glyph": "U0561",
-      "char": "ա",
-      "created": 1793518476.20735,
-      "note": "",
-      "svg": "submissions/115cf32f-3ebe-476b-bc89-f7a3ff1a6145/U0561-f048eb802faf5d0fdf20bfa8304508ea.svg",
-      "json": "submissions/115cf32f-3ebe-476b-bc89-f7a3ff1a6145/U0561-f048eb802faf5d0fdf20bfa8304508ea.json"
-    },
-    {
       "id": "ad649cc51860d6a8fbcaef0681cb8dff",
       "session": "115cf32f-3ebe-476b-bc89-f7a3ff1a6145",
       "glyph": "U0531",
