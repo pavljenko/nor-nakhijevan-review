@@ -1,34 +1,3 @@
 {
-  "records": [
-    {
-      "id": "ad649cc51860d6a8fbcaef0681cb8dff",
-      "session": "115cf32f-3ebe-476b-bc89-f7a3ff1a6145",
-      "glyph": "U0531",
-      "char": "Ա",
-      "created": 1793518465.1383767,
-      "note": "",
-      "svg": "submissions/115cf32f-3ebe-476b-bc89-f7a3ff1a6145/U0531-ad649cc51860d6a8fbcaef0681cb8dff.svg",
-      "json": "submissions/115cf32f-3ebe-476b-bc89-f7a3ff1a6145/U0531-ad649cc51860d6a8fbcaef0681cb8dff.json"
-    },
-    {
-      "id": "a554b2e4067dc6d23e3d8c011dc2f3cc",
-      "session": "115cf32f-3ebe-476b-bc89-f7a3ff1a6145",
-      "glyph": "U0531",
-      "char": "Ա",
-      "created": 1793518463.8317022,
-      "note": "",
-      "svg": "submissions/115cf32f-3ebe-476b-bc89-f7a3ff1a6145/U0531-a554b2e4067dc6d23e3d8c011dc2f3cc.svg",
-      "json": "submissions/115cf32f-3ebe-476b-bc89-f7a3ff1a6145/U0531-a554b2e4067dc6d23e3d8c011dc2f3cc.json"
-    },
-    {
-      "id": "eac711993196cf9d859f2e2215e7105a",
-      "session": "115cf32f-3ebe-476b-bc89-f7a3ff1a6145",
-      "glyph": "U0531",
-      "char": "Ա",
-      "created": 1793518459.4112864,
-      "note": "",
-      "svg": "submissions/115cf32f-3ebe-476b-bc89-f7a3ff1a6145/U0531-eac711993196cf9d859f2e2215e7105a.svg",
-      "json": "submissions/115cf32f-3ebe-476b-bc89-f7a3ff1a6145/U0531-eac711993196cf9d859f2e2215e7105a.json"
-    }
-  ]
+  "records": []
 }
