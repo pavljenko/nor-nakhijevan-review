@@ -3,6 +3,7 @@
 import os,json,re,math,time,uuid,hashlib,sqlite3,threading,urllib.parse,html,subprocess
 from pathlib import Path
 from http.server import ThreadingHTTPServer,BaseHTTPRequestHandler
+from contextlib import contextmanager
 ROOT=Path(__file__).resolve().parent
 DATA=Path(os.environ.get('REVIEW_DATA',str(ROOT/'data')))
 REPO='pavljenko/nor-nakhijevan-review'
@@ -13,13 +14,21 @@ OWNER_TOKEN=os.environ.get('OWNER_TOKEN','')
 GLYPHS=json.loads((ROOT/'glyphs.json').read_text())
 GLYPHS={g['id']:g for p in GLYPHS['pairs'] for g in [p['upper'],p['lower']]}
 LOCK=threading.Lock()
+WAKE=threading.Event()
+@contextmanager
 def database():
- c=sqlite3.connect(DATA/'archive.sqlite',timeout=30);c.row_factory=sqlite3.Row;return c
+ c=sqlite3.connect(DATA/'archive.sqlite',timeout=10);c.row_factory=sqlite3.Row;c.execute('PRAGMA synchronous=FULL')
+ try:
+  with c:yield c
+ finally:c.close()
 def init():
  DATA.mkdir(parents=True,exist_ok=True)
  with database() as c:
+  c.execute('PRAGMA journal_mode=WAL')
   c.execute('CREATE TABLE IF NOT EXISTS drawings (id TEXT PRIMARY KEY, session TEXT, glyph TEXT, body TEXT, status TEXT, svg_url TEXT, json_url TEXT, attempts INTEGER DEFAULT 0, next_try REAL DEFAULT 0, created REAL)')
   c.execute('CREATE TABLE IF NOT EXISTS deleted_groups (session TEXT, glyph TEXT, status TEXT, next_try REAL DEFAULT 0, PRIMARY KEY(session,glyph))')
+  if 'revision' not in [r[1] for r in c.execute('PRAGMA table_info(drawings)')]:c.execute('ALTER TABLE drawings ADD COLUMN revision INTEGER DEFAULT 0')
+  c.execute('CREATE INDEX IF NOT EXISTS drawings_group_revision ON drawings(session,glyph,revision)')
 def validate(d):
  if d.get('glyph') not in GLYPHS:raise ValueError('glyph')
  if not re.fullmatch(r'[a-f0-9-]{36}',d.get('session','')):raise ValueError('session')
@@ -35,13 +44,22 @@ def validate(d):
   for p in pts:
    if not isinstance(p,list) or len(p)!=2 or any(not isinstance(x,(int,float)) or not math.isfinite(x) or not -100<=x<=5000 for x in p):raise ValueError('coordinate')
   out.append({'points':pts,'width':width,'color':color})
- return {'session':d['session'],'glyph':d['glyph'],'strokes':out,'note':note,'schema':1}
+ result={'session':d['session'],'glyph':d['glyph'],'strokes':out,'note':note,'schema':1}
+ if 'revision' in d:
+  if type(d['revision']) is not int or not 1<=d['revision']<=1000000000:raise ValueError('revision')
+  result['revision']=d['revision']
+ return result
 def save_record(d):
  body=json.dumps(validate(d),ensure_ascii=False,separators=(',',':'),sort_keys=True)
  ident=hashlib.sha256(body.encode()).hexdigest()[:32]
  with LOCK,database() as c:
   if c.execute('SELECT 1 FROM deleted_groups WHERE session=? AND glyph=?',(d['session'],d['glyph'])).fetchone():raise ValueError('deleted group')
-  c.execute('INSERT OR IGNORE INTO drawings(id,session,glyph,body,status,created) VALUES(?,?,?,?,?,?)',(ident,d['session'],d['glyph'],body,'queued',time.time()))
+  revision=d.get('revision',0)
+  if revision:
+   latest=c.execute('SELECT id,revision FROM drawings WHERE session=? AND glyph=? ORDER BY revision DESC LIMIT 1',(d['session'],d['glyph'])).fetchone()
+   if latest and latest['revision']>=revision:return latest['id']
+  c.execute('INSERT OR IGNORE INTO drawings(id,session,glyph,body,status,created,revision) VALUES(?,?,?,?,?,?,?)',(ident,d['session'],d['glyph'],body,'queued',time.time(),revision))
+ WAKE.set()
  return ident
 def svg(d):
  g=GLYPHS[d['glyph']];w=max(1000,g['advance']+200)
@@ -55,13 +73,14 @@ def svg(d):
  return (''.join(s)+'</svg>').encode()
 def public_gallery():
  with LOCK,database() as c:
-  rows=c.execute("SELECT d.* FROM drawings d WHERE d.status='saved' AND NOT EXISTS(SELECT 1 FROM deleted_groups g WHERE g.session=d.session AND g.glyph=d.glyph) ORDER BY d.created DESC").fetchall()
+  rows=c.execute("SELECT d.* FROM drawings d WHERE d.status IN ('saved','queued') AND NOT EXISTS(SELECT 1 FROM deleted_groups g WHERE g.session=d.session AND g.glyph=d.glyph) ORDER BY d.created DESC").fetchall()
  records=[]
  for row in rows:
   d=json.loads(row['body'])
   if not d.get('strokes'):continue
   rel=f'submissions/{d["session"]}/{d["glyph"]}-{row["id"]}'
-  records.append({'id':row['id'],'session':d['session'],'glyph':d['glyph'],'char':GLYPHS[d['glyph']]['char'],'created':row['created'],'note':d.get('note',''),'svg':rel+'.svg','json':rel+'.json'})
+  preview='https://tools.pavljenko.ru/nor-nakhijevan/api/sketch/'+row['id']
+  records.append({'id':row['id'],'session':d['session'],'glyph':d['glyph'],'char':GLYPHS[d['glyph']]['char'],'created':row['created'],'note':d.get('note',''),'svg':rel+'.svg','json':rel+'.json','preview_svg':preview+'.svg','preview_json':preview+'.json'})
  return {'records':records}
 def gallery_index():
  with database() as c:dates={r['id']:r['created'] for r in c.execute('SELECT id,created FROM drawings')}
@@ -120,6 +139,7 @@ def request_delete(session,glyph):
   if not c.execute('SELECT 1 FROM drawings WHERE session=? AND glyph=?',(session,glyph)).fetchone():raise ValueError('unknown group')
   c.execute("INSERT OR IGNORE INTO deleted_groups(session,glyph,status) VALUES(?,?,'queued')",(session,glyph))
   c.execute("UPDATE drawings SET status='deleted' WHERE session=? AND glyph=?",(session,glyph))
+ WAKE.set()
 def delete_one(client):
  with LOCK,database() as c:r=c.execute("SELECT * FROM deleted_groups WHERE status='queued' AND next_try<=? LIMIT 1",(time.time(),)).fetchone()
  if r is None:return False
@@ -143,7 +163,8 @@ def upload_one(client):
 def uploader():
  client=GitArchive()
  while True:
-  if not delete_one(client) and not upload_one(client):time.sleep(1)
+  WAKE.clear()
+  if not delete_one(client) and not upload_one(client):WAKE.wait(1)
 class Handler(BaseHTTPRequestHandler):
  def log_message(self,*args):pass
  def reply(self,status,data):
@@ -153,7 +174,7 @@ class Handler(BaseHTTPRequestHandler):
   if origin in ('https://pavljenko.github.io','https://tools.pavljenko.ru','http://127.0.0.1:8797'):
    self.send_header('Access-Control-Allow-Origin',origin);self.send_header('Vary','Origin')
  def do_OPTIONS(self):
-  self.send_response(204);self.cors();self.send_header('Access-Control-Allow-Methods','GET, POST, OPTIONS');self.send_header('Access-Control-Allow-Headers','Content-Type, X-Review-Key, X-Owner-Key');self.end_headers()
+  self.send_response(204);self.cors();self.send_header('Access-Control-Allow-Methods','GET, POST, OPTIONS');self.send_header('Access-Control-Allow-Headers','Content-Type, X-Review-Key, X-Owner-Key');self.send_header('Access-Control-Max-Age','3600');self.end_headers()
  def allowed(self):
   import hmac
   return bool(TOKEN) and hmac.compare_digest(self.headers.get('X-Review-Key',''),TOKEN)
@@ -162,6 +183,14 @@ class Handler(BaseHTTPRequestHandler):
   return bool(OWNER_TOKEN) and hmac.compare_digest(self.headers.get('X-Owner-Key',''),OWNER_TOKEN)
  def do_GET(self):
   u=urllib.parse.urlsplit(self.path)
+  if u.path.endswith('/api/stand-ui'):
+   b=(ROOT/'stand.html').read_bytes();self.send_response(200);self.send_header('Content-Type','text/html; charset=utf-8');self.send_header('Cache-Control','no-store');self.send_header('Referrer-Policy','no-referrer');self.end_headers();return self.wfile.write(b)
+  match=re.fullmatch(r'/nor-nakhijevan/api/sketch/([a-f0-9]{32})\.(svg|json)',u.path)
+  if match:
+   with LOCK,database() as c:row=c.execute("SELECT d.body FROM drawings d WHERE d.id=? AND d.status IN ('saved','queued') AND NOT EXISTS(SELECT 1 FROM deleted_groups g WHERE g.session=d.session AND g.glyph=d.glyph)",(match[1],)).fetchone()
+   if not row:return self.reply(404,{'error':'Не найдено'})
+   d=json.loads(row['body']);b=svg(d) if match[2]=='svg' else row['body'].encode()
+   self.send_response(200);self.cors();self.send_header('Content-Type','image/svg+xml' if match[2]=='svg' else 'application/json; charset=utf-8');self.send_header('Cache-Control','no-store');self.send_header('X-Content-Type-Options','nosniff');self.end_headers();return self.wfile.write(b)
   if u.path.endswith('/api/gallery-ui'):
    b=(ROOT/'gallery.html').read_bytes();self.send_response(200);self.send_header('Content-Type','text/html; charset=utf-8');self.send_header('Cache-Control','no-store');self.send_header('Referrer-Policy','no-referrer');self.end_headers();return self.wfile.write(b)
   if u.path.endswith('/api/gallery'):return self.reply(200,public_gallery())
@@ -199,7 +228,7 @@ class Handler(BaseHTTPRequestHandler):
    n=int(self.headers.get('Content-Length','0'))
    if not 0<n<=1500000:return self.reply(413,{'error':'Рисунок слишком большой'})
    d=json.loads(self.rfile.read(n));ident=save_record(d)
-   self.reply(202,{'id':ident,'accepted':True})
+   self.reply(202,{'id':ident,'accepted':True,'durable':True})
   except (ValueError,TypeError,KeyError,AttributeError):self.reply(400,{'error':'Неверный рисунок'})
   except Exception:self.reply(500,{'error':'Не удалось принять рисунок'})
 if __name__=='__main__':

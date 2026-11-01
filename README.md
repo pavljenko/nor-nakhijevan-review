@@ -12,9 +12,9 @@ Mobile drawing stand for reviewing 38 Armenian uppercase/lowercase pairs of Nor 
 
 ## Use
 
-Open the shared Pages link, select a letter, and draw directly on the canvas. The canvas, tools and Save button fit on one screen. The grid icon opens the public gallery. Each page load starts a clean drawing session. Changes are automatically submitted; wait for the saved confirmation before closing the page. Saved SVG and JSON files remain public in the `drawings` branch, grouped by session.
+Open the shared stand link, select a letter, and draw directly on the canvas. The canvas, tools and Save button fit on one screen. The grid icon opens the public gallery. Each page load starts a clean drawing session. Changes are backed up locally after each stroke (and periodically during drawing), then automatically submitted. Undelivered drawings survive reload in a browser outbox while the canvas starts fresh. Retries use bounded request timeouts and exponential backoff; the online event retries immediately. Wait for the saved confirmation before closing the page. Saved SVG and JSON files remain public in the `drawings` branch, grouped by session.
 
-The `main` branch contains the stand and collector source. GitHub Pages serves `docs/`. Drawing submissions go to `drawings`, so they do not rebuild Pages. The collector on the owner's server validates submissions, stores them durably, and pushes immutable SVG/JSON pairs. GitHub credentials are never sent to a visitor's browser. The shared link contains only the stand's submission capability.
+The `main` branch contains the stand and collector source. GitHub Pages serves `docs/`; the short stand link uses the same generated `stand.html` served directly by the collector to avoid deployment/cache delays and cross-origin preflights. Drawing submissions go to `drawings`, so they do not rebuild Pages. The collector on the owner's server validates submissions, stores them durably, and pushes immutable SVG/JSON pairs. GitHub credentials are never sent to a visitor's browser. The shared link contains only the stand's submission capability.
 
 ## Files
 
@@ -35,6 +35,8 @@ Saved constructions automatically update `gallery.json`, thumbnail aliases and t
 ## Owner controls
 
 The owner receives a separate private gallery link. It enables deletion only after server-side verification of a dedicated owner capability; the shared submission key cannot delete. Deleting a card removes every intermediate revision for that session and glyph from the current archive, gallery and preview aliases. Git history retains previous commits. Never publish the owner key in this repository or share the private management link.
+
+A successful save receipt is returned only after the SQLite transaction commits with WAL/FULL durability. GitHub publication is a separate retrying background job. The public gallery and SVG/JSON endpoints include durable queued drawings immediately. Monotonic revisions prevent a delayed older request from replacing newer strokes. Browser backups are removed only for the exact confirmed snapshot.
 
 The public gallery reads the live `/api/gallery` endpoint with no-store caching and refreshes every five seconds while visible, plus on focus. Deletion tombstones are excluded immediately, before GitHub cleanup completes.
 
