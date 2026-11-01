@@ -9,6 +9,7 @@ REPO='pavljenko/nor-nakhijevan-review'
 GITDIR=DATA/'git'
 KEY=DATA/'deploy_key'
 TOKEN=os.environ.get('REVIEW_TOKEN','')
+OWNER_TOKEN=os.environ.get('OWNER_TOKEN','')
 GLYPHS=json.loads((ROOT/'glyphs.json').read_text())
 GLYPHS={g['id']:g for p in GLYPHS['pairs'] for g in [p['upper'],p['lower']]}
 LOCK=threading.Lock()
@@ -18,6 +19,7 @@ def init():
  DATA.mkdir(parents=True,exist_ok=True)
  with database() as c:
   c.execute('CREATE TABLE IF NOT EXISTS drawings (id TEXT PRIMARY KEY, session TEXT, glyph TEXT, body TEXT, status TEXT, svg_url TEXT, json_url TEXT, attempts INTEGER DEFAULT 0, next_try REAL DEFAULT 0, created REAL)')
+  c.execute('CREATE TABLE IF NOT EXISTS deleted_groups (session TEXT, glyph TEXT, status TEXT, next_try REAL DEFAULT 0, PRIMARY KEY(session,glyph))')
 def validate(d):
  if d.get('glyph') not in GLYPHS:raise ValueError('glyph')
  if not re.fullmatch(r'[a-f0-9-]{36}',d.get('session','')):raise ValueError('session')
@@ -38,6 +40,7 @@ def save_record(d):
  body=json.dumps(validate(d),ensure_ascii=False,separators=(',',':'),sort_keys=True)
  ident=hashlib.sha256(body.encode()).hexdigest()[:32]
  with LOCK,database() as c:
+  if c.execute('SELECT 1 FROM deleted_groups WHERE session=? AND glyph=?',(d['session'],d['glyph'])).fetchone():raise ValueError('deleted group')
   c.execute('INSERT OR IGNORE INTO drawings(id,session,glyph,body,status,created) VALUES(?,?,?,?,?,?)',(ident,d['session'],d['glyph'],body,'queued',time.time()))
  return ident
 def svg(d):
@@ -52,10 +55,11 @@ def svg(d):
  return (''.join(s)+'</svg>').encode()
 def gallery_index():
  with database() as c:dates={r['id']:r['created'] for r in c.execute('SELECT id,created FROM drawings')}
+ with database() as c:deleted={(r['session'],r['glyph']) for r in c.execute('SELECT session,glyph FROM deleted_groups')}
  records=[]
  for p in (GITDIR/'submissions').glob('*/*.json'):
   d=json.loads(p.read_text())
-  if not d.get('strokes'):continue
+  if not d.get('strokes') or (d['session'],d['glyph']) in deleted:continue
   ident=p.stem.split('-')[-1];rel=p.relative_to(GITDIR).with_suffix('').as_posix()
   records.append({'id':ident,'session':d['session'],'glyph':d['glyph'],'char':GLYPHS[d['glyph']]['char'],'created':dates.get(ident,p.stat().st_mtime),'note':d.get('note',''),'svg':rel+'.svg','json':rel+'.json'})
  records.sort(key=lambda r:r['created'],reverse=True)
@@ -64,6 +68,7 @@ def gallery_index():
  for r in records:latest.setdefault((r['session'],r['glyph']),r)
  gallery=GITDIR/'gallery';gallery.mkdir(exist_ok=True)
  cards=list(latest.values())
+ for old in gallery.glob('latest-*.svg'):old.unlink()
  for i,r in enumerate(cards[:6],1):(gallery/f'latest-{i}.svg').write_bytes((GITDIR/r['svg']).read_bytes())
  lines=['# Зарисовки','', '[Открыть галерею](https://pavljenko.github.io/nor-nakhijevan-review/gallery.html)','', 'Новые варианты сверху. Все предыдущие версии сохранены в папке submissions.','']
  from datetime import datetime,timezone
@@ -91,13 +96,36 @@ class GitArchive:
    self.run('-c','user.name=Glyph review stand','-c','user.email=review@localhost','commit','-m','Save '+d['glyph']+' construction '+ident[:8])
    self.run('push','origin','HEAD:drawings')
   return 'https://github.com/'+REPO+'/blob/drawings/'+rel+'.svg','https://github.com/'+REPO+'/blob/drawings/'+rel+'.json'
+ def remove_group(self,session,glyph):
+  self.run('fetch','origin','drawings');self.run('reset','--hard','origin/drawings')
+  for suffix in ('json','svg'):
+   for p in (GITDIR/'submissions'/session).glob(glyph+'-*.'+suffix):p.unlink()
+  gallery_index();self.run('add','-A','--','submissions','gallery','gallery.json','README.md')
+  if self.run('status','--porcelain'):
+   self.run('-c','user.name=Glyph review stand','-c','user.email=review@localhost','commit','-m','Remove construction '+glyph+' from session '+session)
+   self.run('push','origin','HEAD:drawings')
+def request_delete(session,glyph):
+ if not isinstance(session,str) or not re.fullmatch(r'[a-f0-9-]{36}',session) or glyph not in GLYPHS:raise ValueError('invalid group')
+ with LOCK,database() as c:
+  if not c.execute('SELECT 1 FROM drawings WHERE session=? AND glyph=?',(session,glyph)).fetchone():raise ValueError('unknown group')
+  c.execute("INSERT OR IGNORE INTO deleted_groups(session,glyph,status) VALUES(?,?,'queued')",(session,glyph))
+  c.execute("UPDATE drawings SET status='deleted' WHERE session=? AND glyph=?",(session,glyph))
+def delete_one(client):
+ with LOCK,database() as c:r=c.execute("SELECT * FROM deleted_groups WHERE status='queued' AND next_try<=? LIMIT 1",(time.time(),)).fetchone()
+ if r is None:return False
+ try:
+  client.remove_group(r['session'],r['glyph'])
+  with LOCK,database() as c:c.execute("UPDATE deleted_groups SET status='done' WHERE session=? AND glyph=?",(r['session'],r['glyph']))
+ except Exception:
+  with LOCK,database() as c:c.execute('UPDATE deleted_groups SET next_try=? WHERE session=? AND glyph=?',(time.time()+30,r['session'],r['glyph']))
+ return True
 def upload_one(client):
- with LOCK,database() as c:row=c.execute("SELECT * FROM drawings WHERE status!='saved' AND next_try<=? ORDER BY created LIMIT 1",(time.time(),)).fetchone()
+ with LOCK,database() as c:row=c.execute("SELECT * FROM drawings WHERE status='queued' AND next_try<=? ORDER BY created LIMIT 1",(time.time(),)).fetchone()
  if row is None:return False
  try:
   d=json.loads(row['body'])
   su,ju=client.publish(d,row['id'])
-  with LOCK,database() as c:c.execute("UPDATE drawings SET status='saved',svg_url=?,json_url=? WHERE id=?",(su,ju,row['id']))
+  with LOCK,database() as c:c.execute("UPDATE drawings SET status='saved',svg_url=?,json_url=? WHERE id=? AND status!='deleted'",(su,ju,row['id']))
  except Exception as e:
   print('GitHub upload pending:',type(e).__name__,flush=True)
   with LOCK,database() as c:c.execute("UPDATE drawings SET status='queued',attempts=attempts+1,next_try=? WHERE id=?",(time.time()+30,row['id']))
@@ -105,7 +133,7 @@ def upload_one(client):
 def uploader():
  client=GitArchive()
  while True:
-  if not upload_one(client):time.sleep(1)
+  if not delete_one(client) and not upload_one(client):time.sleep(1)
 class Handler(BaseHTTPRequestHandler):
  def log_message(self,*args):pass
  def reply(self,status,data):
@@ -115,12 +143,19 @@ class Handler(BaseHTTPRequestHandler):
   if origin in ('https://pavljenko.github.io','http://127.0.0.1:8797'):
    self.send_header('Access-Control-Allow-Origin',origin);self.send_header('Vary','Origin')
  def do_OPTIONS(self):
-  self.send_response(204);self.cors();self.send_header('Access-Control-Allow-Methods','GET, POST, OPTIONS');self.send_header('Access-Control-Allow-Headers','Content-Type, X-Review-Key');self.end_headers()
+  self.send_response(204);self.cors();self.send_header('Access-Control-Allow-Methods','GET, POST, OPTIONS');self.send_header('Access-Control-Allow-Headers','Content-Type, X-Review-Key, X-Owner-Key');self.end_headers()
  def allowed(self):
   import hmac
   return bool(TOKEN) and hmac.compare_digest(self.headers.get('X-Review-Key',''),TOKEN)
+ def owner_allowed(self):
+  import hmac
+  return bool(OWNER_TOKEN) and hmac.compare_digest(self.headers.get('X-Owner-Key',''),OWNER_TOKEN)
  def do_GET(self):
   u=urllib.parse.urlsplit(self.path)
+  if u.path.endswith('/api/owner'):
+   if not self.owner_allowed():return self.reply(403,{'error':'Нет доступа'})
+   with LOCK,database() as c:deleted=[dict(r) for r in c.execute('SELECT session,glyph,status FROM deleted_groups')]
+   return self.reply(200,{'owner':True,'deleted':deleted})
   if u.path.endswith('/api/health'):return self.reply(200,{'ready':True})
   if u.path.endswith('/api/review'):
    if not self.allowed():return self.reply(403,{'error':'Нет доступа'})
@@ -134,6 +169,15 @@ class Handler(BaseHTTPRequestHandler):
     self.send_response(200);self.send_header('Content-Type','application/javascript' if p.suffix=='.js' else 'text/html; charset=utf-8');self.end_headers();return self.wfile.write(p.read_bytes())
   self.reply(404,{'error':'Не найдено'})
  def do_POST(self):
+  if urllib.parse.urlsplit(self.path).path=='/nor-nakhijevan/api/delete':
+   if not self.owner_allowed():return self.reply(403,{'error':'Только владелец может удалять зарисовки'})
+   if self.headers.get('Origin') not in ('https://pavljenko.github.io','http://127.0.0.1:8797',None):return self.reply(403,{'error':'Неверный источник'})
+   try:
+    n=int(self.headers.get('Content-Length','0'))
+    if not 0<n<=2000:return self.reply(413,{'error':'Неверный запрос'})
+    d=json.loads(self.rfile.read(n));request_delete(d.get('session'),d.get('glyph'))
+    return self.reply(202,{'accepted':True})
+   except (ValueError,TypeError):return self.reply(400,{'error':'Неверная зарисовка'})
   if urllib.parse.urlsplit(self.path).path!='/nor-nakhijevan/api/review':return self.reply(404,{'error':'Не найдено'})
   if not self.allowed():return self.reply(403,{'error':'Нет доступа'})
   origin=self.headers.get('Origin')

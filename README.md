@@ -31,3 +31,7 @@ Font contours and submitted artwork are published for review. This repository do
 Edit `src/review.html`, then run `python3 build.py`. The build embeds the approved reference paths in an immutable JavaScript asset and updates `docs/index.html`. No dependencies are required.
 
 Saved constructions automatically update `gallery.json`, thumbnail aliases and the visual README in the `drawings` branch. The gallery groups revisions by session and glyph, with the newest saved variant first. Original SVG/JSON versions remain in the archive.
+
+## Owner controls
+
+The owner receives a separate private gallery link. It enables deletion only after server-side verification of a dedicated owner capability; the shared submission key cannot delete. Deleting a card removes every intermediate revision for that session and glyph from the current archive, gallery and preview aliases. Git history retains previous commits. Never publish the owner key in this repository or share the private management link.
