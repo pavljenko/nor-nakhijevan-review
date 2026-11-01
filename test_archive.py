@@ -31,3 +31,8 @@ assert any(c[0]=='push' and c[-1]=='HEAD:drawings' for c in g.calls)
 assert list((s.GITDIR/'submissions'/d['session']).glob('*.svg'))
 assert list((s.GITDIR/'submissions'/d['session']).glob('*.json'))
 print('Passed: independent sessions, idempotency, validation, escaped SVG, durable retry, archive-only push')
+
+index=json.loads((s.GITDIR/"gallery.json").read_text());assert len(index["records"])==1
+assert (s.GITDIR/"gallery/latest-1.svg").exists()
+assert "![" in (s.GITDIR/"README.md").read_text()
+print("Passed: gallery index, previews and README cards")

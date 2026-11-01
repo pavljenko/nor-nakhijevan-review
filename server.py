@@ -50,6 +50,28 @@ def svg(d):
   if len(x['points'])==1:path+='l.01,.01'
   s.append(f'<path d="{path}" fill="none" stroke="{x["color"]}" stroke-width="{x["width"]}" stroke-linecap="round" stroke-linejoin="round"/>')
  return (''.join(s)+'</svg>').encode()
+def gallery_index():
+ with database() as c:dates={r['id']:r['created'] for r in c.execute('SELECT id,created FROM drawings')}
+ records=[]
+ for p in (GITDIR/'submissions').glob('*/*.json'):
+  d=json.loads(p.read_text())
+  if not d.get('strokes'):continue
+  ident=p.stem.split('-')[-1];rel=p.relative_to(GITDIR).with_suffix('').as_posix()
+  records.append({'id':ident,'session':d['session'],'glyph':d['glyph'],'char':GLYPHS[d['glyph']]['char'],'created':dates.get(ident,p.stat().st_mtime),'note':d.get('note',''),'svg':rel+'.svg','json':rel+'.json'})
+ records.sort(key=lambda r:r['created'],reverse=True)
+ (GITDIR/'gallery.json').write_text(json.dumps({'records':records},ensure_ascii=False,indent=2)+'\n')
+ latest={}
+ for r in records:latest.setdefault((r['session'],r['glyph']),r)
+ gallery=GITDIR/'gallery';gallery.mkdir(exist_ok=True)
+ cards=list(latest.values())
+ for i,r in enumerate(cards[:6],1):(gallery/f'latest-{i}.svg').write_bytes((GITDIR/r['svg']).read_bytes())
+ lines=['# Зарисовки','', '[Открыть галерею](https://pavljenko.github.io/nor-nakhijevan-review/gallery.html)','', 'Новые варианты сверху. Все предыдущие версии сохранены в папке submissions.','']
+ from datetime import datetime,timezone
+ for r in cards[:100]:
+  date=datetime.fromtimestamp(r['created'],timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
+  lines.extend([f'### {r["char"]} · {date}', '', f'[![{r["char"]}]({r["svg"]})]({r["svg"]})','',html.escape(r['note']), '', f'[SVG]({r["svg"]}) · [Данные]({r["json"]})',''])
+ (GITDIR/'README.md').write_text('\n'.join(lines))
+ return records
 class GitArchive:
  def run(self,*args):
   env={**os.environ,'GIT_SSH_COMMAND':f'ssh -i {KEY} -o IdentitiesOnly=yes -o UserKnownHostsFile={DATA}/known_hosts -o StrictHostKeyChecking=yes','GIT_TERMINAL_PROMPT':'0'}
@@ -63,7 +85,8 @@ class GitArchive:
   p=GITDIR/rel;p.parent.mkdir(parents=True,exist_ok=True)
   p.with_suffix('.json').write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n')
   p.with_suffix('.svg').write_bytes(svg(d))
-  self.run('add','--',rel+'.json',rel+'.svg')
+  gallery_index()
+  self.run('add','--',rel+'.json',rel+'.svg','README.md','gallery.json','gallery')
   if self.run('status','--porcelain'):
    self.run('-c','user.name=Glyph review stand','-c','user.email=review@localhost','commit','-m','Save '+d['glyph']+' construction '+ident[:8])
    self.run('push','origin','HEAD:drawings')
