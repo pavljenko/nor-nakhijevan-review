@@ -1,6 +1,16 @@
 {
   "records": [
     {
+      "id": "45c58b42859c5e7ca4b23cb264160c59",
+      "session": "0a6c3de1-ce6a-4dd2-9912-0991ac892689",
+      "glyph": "U0564",
+      "char": "դ",
+      "created": 1793676349.473497,
+      "note": "",
+      "svg": "submissions/0a6c3de1-ce6a-4dd2-9912-0991ac892689/U0564-45c58b42859c5e7ca4b23cb264160c59.svg",
+      "json": "submissions/0a6c3de1-ce6a-4dd2-9912-0991ac892689/U0564-45c58b42859c5e7ca4b23cb264160c59.json"
+    },
+    {
       "id": "bb7ce7cbe321a60cdd2c0e7e88b6c3e1",
       "session": "0a6c3de1-ce6a-4dd2-9912-0991ac892689",
       "glyph": "U0563",
