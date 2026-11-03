@@ -41,3 +41,5 @@ A successful save receipt is returned only after the SQLite transaction commits 
 The public gallery reads the live `/api/gallery` endpoint with no-store caching and refreshes every five seconds while visible, plus on focus. Deletion tombstones are excluded immediately, before GitHub cleanup completes.
 
 The live gallery HTML is also served by the collector at `/api/gallery-ui` with no-store headers. Public and private short links route to it directly, so gallery fixes do not wait for GitHub Pages deployment. GitHub remains the SVG/JSON archive and source repository.
+
+The editor uses a fixed page and stable small-viewport height (`svh`), explicit touch/gesture/drag cancellation, and an independent scrollable alphabet dialog. Save messages overlay the stage without changing its dimensions. Older browsers keep their initial height until a width/orientation change. Pointer coordinates use one transform per stroke; moving a pen updates only that stroke.
