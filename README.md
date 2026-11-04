@@ -4,6 +4,14 @@
 
 Новые варианты сверху. Все предыдущие версии сохранены в папке submissions.
 
+### ք · 2026-11-04 19:00 UTC
+
+[![ք](submissions/83df3d23-188c-44f2-b893-a90aec261589/U0584-47261a46c128546ac04a64f18c9e6df3.svg)](submissions/83df3d23-188c-44f2-b893-a90aec261589/U0584-47261a46c128546ac04a64f18c9e6df3.svg)
+
+
+
+[SVG](submissions/83df3d23-188c-44f2-b893-a90aec261589/U0584-47261a46c128546ac04a64f18c9e6df3.svg) · [Данные](submissions/83df3d23-188c-44f2-b893-a90aec261589/U0584-47261a46c128546ac04a64f18c9e6df3.json)
+
 ### Ք · 2026-11-04 19:00 UTC
 
 [![Ք](submissions/83df3d23-188c-44f2-b893-a90aec261589/U0554-f25e7ab5c2b90dadf3c7c42af7494807.svg)](submissions/83df3d23-188c-44f2-b893-a90aec261589/U0554-f25e7ab5c2b90dadf3c7c42af7494807.svg)
@@ -11,14 +19,6 @@
 
 
 [SVG](submissions/83df3d23-188c-44f2-b893-a90aec261589/U0554-f25e7ab5c2b90dadf3c7c42af7494807.svg) · [Данные](submissions/83df3d23-188c-44f2-b893-a90aec261589/U0554-f25e7ab5c2b90dadf3c7c42af7494807.json)
-
-### ք · 2026-11-04 19:00 UTC
-
-[![ք](submissions/83df3d23-188c-44f2-b893-a90aec261589/U0584-8c57554141093f2c167a9737eb10d2be.svg)](submissions/83df3d23-188c-44f2-b893-a90aec261589/U0584-8c57554141093f2c167a9737eb10d2be.svg)
-
-
-
-[SVG](submissions/83df3d23-188c-44f2-b893-a90aec261589/U0584-8c57554141093f2c167a9737eb10d2be.svg) · [Данные](submissions/83df3d23-188c-44f2-b893-a90aec261589/U0584-8c57554141093f2c167a9737eb10d2be.json)
 
 ### փ · 2026-11-04 19:00 UTC
 
