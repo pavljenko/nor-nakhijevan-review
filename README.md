@@ -6,11 +6,11 @@
 
 ### Ա · 2026-11-04 18:50 UTC
 
-[![Ա](submissions/83df3d23-188c-44f2-b893-a90aec261589/U0531-29bebf85396f0240d5f6843c1f7efa2f.svg)](submissions/83df3d23-188c-44f2-b893-a90aec261589/U0531-29bebf85396f0240d5f6843c1f7efa2f.svg)
+[![Ա](submissions/83df3d23-188c-44f2-b893-a90aec261589/U0531-ac18d97e048282ec014d1b10ec51647a.svg)](submissions/83df3d23-188c-44f2-b893-a90aec261589/U0531-ac18d97e048282ec014d1b10ec51647a.svg)
 
 
 
-[SVG](submissions/83df3d23-188c-44f2-b893-a90aec261589/U0531-29bebf85396f0240d5f6843c1f7efa2f.svg) · [Данные](submissions/83df3d23-188c-44f2-b893-a90aec261589/U0531-29bebf85396f0240d5f6843c1f7efa2f.json)
+[SVG](submissions/83df3d23-188c-44f2-b893-a90aec261589/U0531-ac18d97e048282ec014d1b10ec51647a.svg) · [Данные](submissions/83df3d23-188c-44f2-b893-a90aec261589/U0531-ac18d97e048282ec014d1b10ec51647a.json)
 
 ### Ա · 2026-11-04 18:09 UTC
 
