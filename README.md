@@ -244,14 +244,6 @@
 
 [SVG](submissions/83df3d23-188c-44f2-b893-a90aec261589/U0531-43110ff0ffca58633f350386cc167832.svg) · [Данные](submissions/83df3d23-188c-44f2-b893-a90aec261589/U0531-43110ff0ffca58633f350386cc167832.json)
 
-### Ա · 2026-11-04 18:09 UTC
-
-[![Ա](submissions/0bdea4d4-7be7-4ac0-a5f7-df962d6484cc/U0531-31fcf6c28ed8c8cb81bd8d5c321fe1c0.svg)](submissions/0bdea4d4-7be7-4ac0-a5f7-df962d6484cc/U0531-31fcf6c28ed8c8cb81bd8d5c321fe1c0.svg)
-
-
-
-[SVG](submissions/0bdea4d4-7be7-4ac0-a5f7-df962d6484cc/U0531-31fcf6c28ed8c8cb81bd8d5c321fe1c0.svg) · [Данные](submissions/0bdea4d4-7be7-4ac0-a5f7-df962d6484cc/U0531-31fcf6c28ed8c8cb81bd8d5c321fe1c0.json)
-
 ### Ա · 2026-11-03 17:16 UTC
 
 [![Ա](submissions/cb890ee8-c65f-4bc2-a23b-6f43cc92de20/U0531-2d7c5991d0b4dfff0b0db945e6e357ad.svg)](submissions/cb890ee8-c65f-4bc2-a23b-6f43cc92de20/U0531-2d7c5991d0b4dfff0b0db945e6e357ad.svg)
