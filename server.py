@@ -29,6 +29,40 @@ def init():
   c.execute('CREATE TABLE IF NOT EXISTS deleted_groups (session TEXT, glyph TEXT, status TEXT, next_try REAL DEFAULT 0, PRIMARY KEY(session,glyph))')
   if 'revision' not in [r[1] for r in c.execute('PRAGMA table_info(drawings)')]:c.execute('ALTER TABLE drawings ADD COLUMN revision INTEGER DEFAULT 0')
   c.execute('CREATE INDEX IF NOT EXISTS drawings_group_revision ON drawings(session,glyph,revision)')
+  c.execute('CREATE TABLE IF NOT EXISTS motions (id TEXT PRIMARY KEY, glyph TEXT, body TEXT, created REAL)')
+def validate_motion(d):
+ if d.get('schema')!=1 or d.get('glyph') not in GLYPHS:raise ValueError('glyph')
+ w=max(1000,GLYPHS[d['glyph']]['advance']+200)
+ if d.get('viewBox')!=[0,0,w,1100]:raise ValueError('viewBox')
+ duration=d.get('duration');strokes=d.get('strokes')
+ if type(duration) is not int or not 0<=duration<=180000:raise ValueError('duration')
+ if not isinstance(strokes,list) or not 1<=len(strokes)<=100:raise ValueError('strokes')
+ count=0;previous=-1;out=[]
+ for stroke in strokes:
+  points=stroke.get('points')
+  if not isinstance(points,list) or not 1<=len(points)<=20000:raise ValueError('points')
+  count+=len(points)
+  if count>60000:raise ValueError('points')
+  clean=[]
+  for p in points:
+   if not isinstance(p,list) or len(p)!=3:raise ValueError('point')
+   x,y,t=p
+   if any(type(v) not in (int,float) or not math.isfinite(v) or not -5000<=v<=5000 for v in (x,y)):raise ValueError('coordinate')
+   if type(t) is not int or not 0<=t<=duration or t<previous:raise ValueError('time')
+   clean.append([x,y,t]);previous=t
+  out.append({'points':clean})
+ if out[0]['points'][0][2]!=0 or previous!=duration:raise ValueError('time bounds')
+ return {'schema':1,'glyph':d['glyph'],'viewBox':[0,0,w,1100],'duration':duration,'strokes':out}
+def save_motion(d):
+ d=validate_motion(d);body=json.dumps(d,ensure_ascii=False,separators=(',',':'),sort_keys=True)
+ ident=hashlib.sha256(body.encode()).hexdigest()[:32]
+ with LOCK,database() as c:
+  folder=DATA/'motions';folder.mkdir(exist_ok=True)
+  temp=folder/(ident+'.pending')
+  with temp.open('wb') as f:f.write(body.encode());f.flush();os.fsync(f.fileno())
+  os.replace(temp,folder/(ident+'.json'))
+  c.execute('INSERT OR IGNORE INTO motions(id,glyph,body,created) VALUES(?,?,?,?)',(ident,d['glyph'],body,time.time()))
+ return ident
 def validate(d):
  if d.get('glyph') not in GLYPHS:raise ValueError('glyph')
  if not re.fullmatch(r'[a-f0-9-]{36}',d.get('session','')):raise ValueError('session')
@@ -168,7 +202,7 @@ def uploader():
 class Handler(BaseHTTPRequestHandler):
  def log_message(self,*args):pass
  def reply(self,status,data):
-  b=json.dumps(data,ensure_ascii=False).encode();self.send_response(status);self.cors();self.send_header('Content-Type','application/json; charset=utf-8');self.send_header('Cache-Control','no-store');self.end_headers();self.wfile.write(b)
+  b=json.dumps(data,ensure_ascii=False).encode();self.send_response(status);self.cors();self.send_header('Content-Type','application/json; charset=utf-8');self.send_header('Content-Length',str(len(b)));self.send_header('Cache-Control','no-store');self.end_headers();self.wfile.write(b)
  def cors(self):
   origin=self.headers.get('Origin','')
   if origin in ('https://pavljenko.github.io','https://tools.pavljenko.ru','http://127.0.0.1:8797'):
@@ -183,6 +217,16 @@ class Handler(BaseHTTPRequestHandler):
   return bool(OWNER_TOKEN) and hmac.compare_digest(self.headers.get('X-Owner-Key',''),OWNER_TOKEN)
  def do_GET(self):
   u=urllib.parse.urlsplit(self.path)
+  if u.path.endswith('/api/recorder-ui'):
+   b=(ROOT/'recorder.html').read_bytes();self.send_response(200);self.send_header('Content-Type','text/html; charset=utf-8');self.send_header('Cache-Control','no-store');self.send_header('Referrer-Policy','no-referrer');self.end_headers();return self.wfile.write(b)
+  if u.path.endswith('/api/motions') or re.fullmatch(r'/nor-nakhijevan/api/motions/[a-f0-9]{32}',u.path):
+   if not self.owner_allowed():return self.reply(403,{'error':'Только автор может открывать записи показа'})
+   with LOCK,database() as c:
+    if u.path.endswith('/api/motions'):
+     rows=c.execute('SELECT id,glyph,created,length(body) AS bytes FROM motions ORDER BY created DESC').fetchall()
+     return self.reply(200,{'records':[dict(r) for r in rows]})
+    row=c.execute('SELECT body FROM motions WHERE id=?',(u.path.rsplit('/',1)[-1],)).fetchone()
+   return self.reply(200,json.loads(row['body'])) if row else self.reply(404,{'error':'Запись не найдена'})
   if u.path.endswith('/api/stand-ui'):
    b=(ROOT/'stand.html').read_bytes();self.send_response(200);self.send_header('Content-Type','text/html; charset=utf-8');self.send_header('Cache-Control','no-store');self.send_header('Referrer-Policy','no-referrer');self.end_headers();return self.wfile.write(b)
   match=re.fullmatch(r'/nor-nakhijevan/api/sketch/([a-f0-9]{32})\.(svg|json)',u.path)
@@ -211,6 +255,16 @@ class Handler(BaseHTTPRequestHandler):
     self.send_response(200);self.send_header('Content-Type','application/javascript' if p.suffix=='.js' else 'text/html; charset=utf-8');self.end_headers();return self.wfile.write(p.read_bytes())
   self.reply(404,{'error':'Не найдено'})
  def do_POST(self):
+  if urllib.parse.urlsplit(self.path).path=='/nor-nakhijevan/api/motions':
+   if not self.owner_allowed():return self.reply(403,{'error':'Только автор может сохранять показ'})
+   if self.headers.get('Origin') not in ('https://pavljenko.github.io','https://tools.pavljenko.ru','http://127.0.0.1:8797',None):return self.reply(403,{'error':'Неверный источник'})
+   try:
+    n=int(self.headers.get('Content-Length','0'))
+    if not 0<n<=1500000:return self.reply(413,{'error':'Запись слишком большая'})
+    ident=save_motion(json.loads(self.rfile.read(n)))
+    return self.reply(202,{'id':ident,'accepted':True,'durable':True})
+   except (ValueError,TypeError,KeyError,AttributeError):return self.reply(400,{'error':'Неверная запись движения'})
+   except Exception:return self.reply(500,{'error':'Не удалось сохранить показ'})
   if urllib.parse.urlsplit(self.path).path=='/nor-nakhijevan/api/delete':
    if not self.owner_allowed():return self.reply(403,{'error':'Только владелец может удалять зарисовки'})
    if self.headers.get('Origin') not in ('https://pavljenko.github.io','https://tools.pavljenko.ru','http://127.0.0.1:8797',None):return self.reply(403,{'error':'Неверный источник'})

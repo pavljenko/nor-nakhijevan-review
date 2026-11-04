@@ -43,3 +43,13 @@ The public gallery reads the live `/api/gallery` endpoint with no-store caching 
 The live gallery HTML is also served by the collector at `/api/gallery-ui` with no-store headers. Public and private short links route to it directly, so gallery fixes do not wait for GitHub Pages deployment. GitHub remains the SVG/JSON archive and source repository.
 
 The editor uses a fixed page and stable small-viewport height (`svh`), explicit touch/gesture/drag cancellation, and an independent scrollable alphabet dialog. Save messages overlay the stage without changing its dimensions. Older browsers keep their initial height until a width/orientation change. Pointer coordinates use one transform per stroke; moving a pen updates only that stroke.
+
+## Drawing demonstration
+
+The main stand opens with the author's recorded two-stroke demonstration of Ա (1,666 ms). The supplied finger SVG follows the recorded contact point as the new contour appears. A repeat button replays it; Start closes the demonstration and leaves a clean drawing canvas. The demo never creates sketch submissions. Reduced-motion preferences show the finished contour with manual replay available.
+
+`src/motion.js` implements capture, time-preserving polyline simplification, and a dependency-free SVG/requestAnimationFrame player. `src/tutorial-motion.json` is the author's accepted recording. `src/assets/finger.svg` preserves the silhouette supplied by the author as `point_483772.svg`; its fingertip hotspot is `(234.667, 0)`.
+
+`recorder.html` is a separate author tool. It records `[x,y,time_ms]`, including pen lifts and pauses, previews with the same player, backs up the draft locally, and exports JSON. Saving and reading `/api/motions` requires the existing owner capability; the shared sketch key cannot access it. Recordings commit durably to SQLite and separate JSON files under the collector's private `motions/` directory, independently of the public sketch gallery. Do not publish owner links or keys.
+
+Checks: `node test_motion.cjs`, `python3 test_motion_store.py`, and the existing save/owner/canvas checks.

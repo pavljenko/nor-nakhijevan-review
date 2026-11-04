@@ -1,0 +1,75 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="referrer" content="no-referrer"><meta name="theme-color" content="#f5f3ee"><title>Запись показа рисования</title><style>
+:root{font:16px/1.4 system-ui,-apple-system,sans-serif;color:#11134b;background:#f5f3ee;color-scheme:light}*{box-sizing:border-box}html{width:100%;height:100%;overflow:hidden;overscroll-behavior:none}body{position:fixed;inset:0;margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none;-webkit-text-size-adjust:100%}button,select,a{font:inherit;color:inherit}button,select{min-width:0;min-height:44px;border:1px solid #dedddf;border-radius:12px;background:#fff;padding:8px;touch-action:manipulation}button{cursor:pointer}button:disabled{opacity:.35}button:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #9293c8;outline-offset:2px}.app{height:100%;height:100svh;width:100%;max-width:1000px;margin:auto;display:flex;flex-direction:column;overflow:hidden;touch-action:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}.header{padding:10px 12px;flex:none}.headline{display:flex;align-items:center;gap:12px;justify-content:space-between}h1{font-size:18px;margin:0;font-weight:600}select{width:124px;font-family:'Noto Sans Armenian',Sylfaen,system-ui,sans-serif;font-size:19px}.hint{margin:7px 0 0;font-size:13px;color:#74737f}.stage{flex:1 1 0;min-height:0;min-width:0;position:relative;background:#fff;border-block:1px solid #dedddf;overflow:hidden;contain:layout paint;touch-action:none}.canvas{position:absolute;inset:0;display:block;width:100%;height:100%;touch-action:none;-webkit-user-drag:none}.guides,.original,.ink,.finger{pointer-events:none}.finger{opacity:.96}.bottom{padding:9px 12px;flex:none}.tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-bottom:8px}.tools button{font-size:13px}.save{width:100%;min-height:48px;background:#11134b;border-color:#11134b;color:#fff;font-weight:550}.feedback{display:flex;align-items:center;gap:12px;margin-top:6px;height:36px}.status{flex:1;min-width:0;font-size:12px;line-height:17px}.status.error{color:#ad3040}.download{flex:none;font-size:12px;text-decoration:none;color:#74737f}.download[aria-disabled=true]{opacity:.35;pointer-events:none}@media(max-height:450px){.header{padding:4px 10px}.hint{margin-top:2px;font-size:12px}h1{font-size:15px}.bottom{padding:4px 10px}.feedback{height:22px}.save{min-height:42px}.tools{margin-bottom:4px}.tools button{min-height:38px}}
+</style></head><body><main class="app"><header class="header"><div class="headline"><h1>Запись показа</h1><select id="glyph" aria-label="Буква для показа"></select></div><p class="hint">Нарисуй полный новый контур буквы поверх образца.</p></header><div id="stage" class="stage"></div><footer class="bottom"><div class="tools"><button id="undo" disabled>Отменить штрих</button><button id="play" disabled>Посмотреть</button><button id="clear" disabled>Заново</button></div><button id="save" class="save" disabled>Сохранить показ</button><div class="feedback"><span id="status" class="status" role="status" aria-live="polite">Начни рисовать пальцем.</span><a id="download" class="download" aria-disabled="true" download="nor-drawing-motion.json">Скачать JSON</a></div></footer></main><script>
+__CANVAS_GUARDS__
+__MOTION__
+const DATA=__GLYPHS__,FINGER=__FINGER_PATH__,NS='http://www.w3.org/2000/svg',API=(location.hostname==='127.0.0.1'?'':'https://tools.pavljenko.ru')+'/nor-nakhijevan/api/';
+const ownerKey=new URLSearchParams(location.hash.slice(1)).get('owner')||'', $=id=>document.getElementById(id),glyphs=Object.fromEntries(DATA.pairs.flatMap(p=>[p.upper,p.lower]).map(g=>[g.id,g]));
+const DRAFT='nor-motion-draft-v1';let capture,svg,layer,hand,activePath,pointer=null,matrix,lastPoint,player=null,playing=false,uploading=false,pending=false,retries=0,retryTimer,downloadURL,checkpoint=0;
+for(const pair of DATA.pairs)for(const c of ['upper','lower']){const g=pair[c];$('glyph').append(new Option(g.char+' — '+(c==='upper'?'прописная':'строчная'),g.id));}
+function node(tag,attrs={}){const n=document.createElementNS(NS,tag);for(const[k,v]of Object.entries(attrs))n.setAttribute(k,v);return n;}
+function message(text,error=false){$('status').textContent=text;$('status').classList.toggle('error',error);}
+function snapshot(){return capture.snapshot();}
+function storeDraft(){try{localStorage.setItem(DRAFT,JSON.stringify({record:snapshot(),pending}));}catch{message('Сохрани показ или скачай копию перед выходом.',true);}}
+function controls(){const has=!!capture.strokes.length;$('glyph').disabled=has||playing;$('undo').disabled=!has||playing||pointer!==null;$('clear').disabled=!has||playing||uploading||pointer!==null;$('play').disabled=!has||pointer!==null;$('play').textContent=playing?'Остановить':'Посмотреть';$('save').disabled=!has||playing||uploading||pointer!==null||!ownerKey;$('download').setAttribute('aria-disabled',String(!has));}
+function download(){if(downloadURL)URL.revokeObjectURL(downloadURL);downloadURL=URL.createObjectURL(new Blob([JSON.stringify(snapshot())],{type:'application/json'}));$('download').href=downloadURL;}
+function paint(){layer.replaceChildren();for(const s of capture.strokes)layer.append(node('path',{d:motionPath(s.points),fill:'none',stroke:'#d63842','stroke-width':7,'stroke-linecap':'round','stroke-linejoin':'round'}));}
+function mount(g,source=null){
+ const w=Math.max(1000,g.advance+200);capture=new MotionCapture(g.id,[0,0,w,1100],source);$('glyph').value=g.id;
+ svg=node('svg',{viewBox:`0 0 ${w} 1100`,class:'canvas',role:'img','aria-label':'Холст записи '+g.char});
+ const guides=node('g',{class:'guides'});for(const y of[850,355,160,1045])guides.append(node('path',{d:`M35 ${y}H${w-35}`,stroke:'#dedde4','stroke-width':1.5,fill:'none','stroke-dasharray':y===850?'':'7 8'}));svg.append(guides);
+ const original=node('g',{class:'original',transform:`translate(${(w-g.advance)/2} 850) scale(1 -1)`,opacity:.12});original.append(node('path',{d:g.path,fill:'#11134b'}));svg.append(original);
+ layer=node('g',{class:'ink'});svg.append(layer);hand=node('g',{class:'finger',visibility:'hidden','aria-hidden':'true'});hand.append(node('path',{d:FINGER,fill:'#11134b',stroke:'#fff','stroke-width':16,'stroke-linejoin':'round','paint-order':'stroke fill'}));svg.append(hand);
+ $('stage').replaceChildren(svg);paint();controls();download();bind();
+}
+function point(e){const p=new DOMPoint(e.clientX,e.clientY).matrixTransform(matrix);return[Math.max(0,Math.min(capture.viewBox[2],p.x)),Math.max(0,Math.min(1100,p.y))];}
+function changed(){if(!capture.strokes.length)pending=false;storeDraft();controls();download();$('save').textContent=uploading?'Сохраняю…':'Сохранить показ';message('Запись: '+(snapshot().duration/1000).toLocaleString('ru-RU',{maximumFractionDigits:1})+' с');if(pending)scheduleSave(700);}
+function bind(){
+ svg.addEventListener('pointerdown',e=>{
+  if(pointer!==null||(e.pointerType==='mouse'&&e.button!==0))return;
+  e.preventDefault();stopPlayback();matrix=svg.getScreenCTM().inverse();lastPoint=point(e);pointer=e.pointerId;svg.setPointerCapture(pointer);
+  capture.begin(...lastPoint,performance.now());paint();activePath=layer.lastChild;controls();storeDraft();message('Записываю движение…');
+ });
+ svg.addEventListener('pointermove',e=>{
+  if(pointer!==e.pointerId)return;e.preventDefault();const now=performance.now();
+  const events=e.getCoalescedEvents?.()||[];
+  for(const sample of events.length?events:[e]){lastPoint=point(sample);capture.add(...lastPoint,now-Math.max(0,e.timeStamp-sample.timeStamp));}
+  activePath.setAttribute('d',motionPath(capture.active.points));
+  if(now-checkpoint>400){checkpoint=now;storeDraft();}
+ });
+ const end=e=>{if(pointer!==e.pointerId)return;lastPoint=point(e);capture.end(...lastPoint,performance.now());pointer=null;activePath=null;paint();changed();};
+ for(const name of['pointerup','pointercancel','lostpointercapture'])svg.addEventListener(name,end);
+}
+function stopPlayback(){if(!player)return;player.stop();player=null;playing=false;paint();controls();}
+function preview(){
+ if(playing)return stopPlayback();capture.pause();const motion=snapshot();paint();
+ for(const p of layer.children){p.setAttribute('pathLength','1');p.setAttribute('stroke-dasharray','1');p.setAttribute('stroke-dashoffset','1');p.setAttribute('visibility','hidden');}
+ playing=true;controls();player=new MotionPlayer({motion,paths:[...layer.children],hand,onEnd:()=>{playing=false;player=null;paint();controls();message('Так будет выглядеть показ перед рисованием.');}});player.play();
+}
+function scheduleSave(ms){clearTimeout(retryTimer);retryTimer=setTimeout(()=>save(false),ms);}
+async function save(manual=true){
+ if(!ownerKey||!capture.strokes.length||uploading||playing||pointer!==null)return;
+ if(manual){pending=true;storeDraft();}else if(!pending)return;
+ const body=JSON.stringify(snapshot()),controller=new AbortController(),deadline=setTimeout(()=>controller.abort(),8000);
+ uploading=true;controls();$('save').textContent='Сохраняю…';message('Сохраняю показ…');
+ try{
+  const r=await fetch(API+'motions',{method:'POST',headers:{'Content-Type':'application/json','X-Owner-Key':ownerKey},body,signal:controller.signal,keepalive:new TextEncoder().encode(body).length<60000});
+  if(!r.ok){const e=Error('save');e.auth=r.status===403;throw e;}
+  const result=await r.json();if(!result.accepted||!result.durable||!result.id)throw Error('receipt');
+  pending=body!==JSON.stringify(snapshot());retries=0;storeDraft();$('save').textContent='Показ сохранён ✓';message('Показ сохранён. Можно вернуться в чат.');if(pending)scheduleSave(700);
+ }catch(e){pending=true;storeDraft();retries++;$('save').textContent='Сохранить показ';message(e.auth?'Нет доступа. Открой личную ссылку.':'Нет связи. Запись в браузере, повторю отправку.',true);scheduleSave(e.auth?30000:Math.min(30000,1000*2**Math.min(retries-1,5)));}
+ finally{clearTimeout(deadline);uploading=false;controls();}
+}
+$('glyph').onchange=()=>{stopPlayback();pending=false;mount(glyphs[$('glyph').value]);storeDraft();message('Начни рисовать пальцем.');};
+$('undo').onclick=()=>{capture.undo();paint();changed();};$('play').onclick=preview;
+$('clear').onclick=()=>{stopPlayback();pending=false;clearTimeout(retryTimer);mount(glyphs[capture.glyph]);storeDraft();$('save').textContent='Сохранить показ';message('Начни рисовать пальцем.');};
+$('save').onclick=()=>save(true);
+installCanvasGuards({app:document.querySelector('.app'),stage:$('stage'),document,isPickerOpen:()=>false});
+let draft;try{draft=JSON.parse(localStorage.getItem(DRAFT));}catch{}
+if(draft?.record&&glyphs[draft.record.glyph]&&Array.isArray(draft.record.strokes)){try{mount(glyphs[draft.record.glyph],draft.record);pending=!!draft.pending;message('Запись восстановлена из браузера.');}catch{mount(glyphs.U0531);}}
+else mount(glyphs.U0531);
+if(!ownerKey)message('Для сохранения открой личную ссылку автора.',true);else if(pending)scheduleSave(100);
+window.addEventListener('online',()=>save(false));
+document.addEventListener('visibilitychange',()=>{if(document.hidden){stopPlayback();if(pointer!==null){capture.end(...lastPoint,performance.now());pointer=null;paint();changed();}capture.pause();storeDraft();}else if(pending)save(false);});
+window.addEventListener('pagehide',()=>{if(pointer!==null){capture.end(...lastPoint,performance.now());pointer=null;}storeDraft();if(pending)save(false);});
+</script></body></html>
